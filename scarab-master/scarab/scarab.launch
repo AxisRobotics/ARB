@@ -1,0 +1,107 @@
+<launch>
+  <!-- Bring ARB, battery monitor, diagnostics, sound, Lidar and motors online
+       Use robot_monitor to see diagnostics
+  -->
+
+  <arg name="diag_rate" default="0.4" />
+
+  <!-- <node name="tf_throttle" pkg="tf_throttle" type="tf_throttle" -->
+  <!--       output="screen" args="/$(env ROS_NAMESPACE)/tf 5 /tf" > -->
+  <!--   <param name="republish_time" value="0.0" /> -->
+  <!--   <param name="use_diff" value="false" /> -->
+  <!--   <param name="angular_change_threshold" value="0.1" /> -->
+  <!--   <param name="linear_change_threshold" value="0.3" /> -->
+  <!-- </node> -->
+
+  <!-- <remap from="/tf" to="tf" /> -->
+
+
+  <!--
+  <node pkg="tf" type="static_transform_publisher" name="transformer"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 scarab/base_link scarab/laser 500" />
+
+  <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0 0 0.0 /map /odom 10"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_frame_laser" args="0 0 0 0 0 0 /base_link /laser 10"/>
+  -->
+  
+
+  <!--
+  <node pkg="rviz" type="rviz" name="rviz" 
+    args="-d $(find hector_slam_launch)/rviz_cfg/mapping_demo.rviz"/>
+  -->
+
+
+  <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+    <!--
+    <param name="angle_min" value="-1.57" />
+    <param name="angle_max" value="1.57" />
+    <remap from="/diagnostics" to="laser_diagnostics" />
+    <param name="frame_id" value="scarab/laser" />
+    -->
+    <param name="serial_port" value="/dev/ttyACM1" />
+
+  </node>
+
+  <!-- <node name="laser_diagnostics" pkg="topic_tools" type="throttle" -->
+  <!--       args="messages /$(env ROS_NAMESPACE)/laser_diagnostics $(arg diag_rate) /diagnostics" output="screen"/> -->
+
+  <!--
+   <node name="laser_throttle" pkg="topic_tools" type="throttle"
+         args="messages scan 5.0" />
+  -->
+
+  <!-- Fire up the BMS (battery management system) listen on /battery_state -->
+  <node pkg="rosserial_python" type="serial_node.py" name="serial_node">
+    <param name="port" value="/dev/ttyUSB0" />
+  </node>
+
+
+  <!-- Start the roboclaw motor driver -->
+  <node pkg="roboclaw" type="roboclaw_node" name="motor" clear_params="true">
+    <param name="broadcast_tf" value="true" />
+    <param name="max_wheel_vel" value="0.6" />
+    <param name="accel_max" value="50.0" />
+    <param name="pid_p" value="2.0" />
+    <param name="pid_i" value=".5" />
+    <param name="pid_d" value="0.1" />
+    <param name="pid_iclamp" value="500" />
+    <param name="freq" value="250" />
+  </node>
+
+
+  <!-- Start the sound driver -->
+  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py">
+  </node>
+
+  <!-- Start the battery sounds -->
+  <node name="sound_server_node" pkg="sound_server" type="sound_server.py">
+  </node>
+
+
+  <!-- <node name="odom_throttle" pkg="topic_tools" type="throttle" -->
+  <!--       args="messages /$(env ROS_NAMESPACE)/odom_motor 2.0" /> -->
+
+
+  <!--  
+  <node name="laser_odom" pkg="laser_odom" type="laser_odom"
+        output="screen" >
+    <param name="debug" value="false" />
+    <param name="base_frame" value="scarab/base_link" />
+    <param name="odom_frame" value="scarab/odom_laser" />
+    <rosparam>
+      grid_resolution: 0.05
+      sensor_sd: 0.02
+      subsample: 1
+      travel_distance: 0.2
+      travel_angle: 0.034
+      decay_duration: 200
+      decay_step: 40
+      range_x: 0.2
+      range_y: 0.2
+    </rosparam>
+  </node>
+  -->
+
+
+</launch>
